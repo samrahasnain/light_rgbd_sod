@@ -19,7 +19,7 @@ import scipy.misc
 from  utils import  count_model_flops,count_model_params
 from PIL import Image
 import json
-
+size_coarse = (10,10)
 class Solver(object):
     def __init__(self, train_loader, test_loader, config):
         self.train_loader = train_loader
