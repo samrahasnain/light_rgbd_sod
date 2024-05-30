@@ -100,7 +100,7 @@ class Solver(object):
                 ttime_elapsed = int(round(time.time()*1000)) - tsince
                 print ('test time elapsed {}ms'.format(ttime_elapsed))
                 #generate_intermediate_map(in)
-                preds = F.interpolate(preds, tuple(im_size), mode='bilinear', align_corners=True)
+                preds = F.interpolate(preds, (320,320), mode='bilinear', align_corners=True)
                 pred = np.squeeze(torch.sigmoid(preds)).cpu().data.numpy()
                 pred = (pred - pred.min()) / (pred.max() - pred.min() + 1e-8)
                 multi_fuse = 255 * pred
