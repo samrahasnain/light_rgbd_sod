@@ -79,17 +79,17 @@ class InceptionModuleModified(nn.Module):
         )    
 
         self.branch3x3 = nn.Sequential(
-            depthwise_separable_conv(in_channels, int(in_channels/2), kernel_size=1, padding=0),self.relu
+            depthwise_separable_conv(in_channels, int(in_channels/2), kernel_size=1, padding=0),self.relu,
             depthwise_separable_conv(int(in_channels/2), int(in_channels/4), kernel_size=3, padding=1),self.relu
         )
 
         self.branch5x5 = nn.Sequential(
-            depthwise_separable_conv(in_channels, int(in_channels/4), kernel_size=1, padding=0),self.relu
+            depthwise_separable_conv(in_channels, int(in_channels/4), kernel_size=1, padding=0),self.relu,
             depthwise_separable_conv(int(in_channels/4), int(in_channels/4), kernel_size=5, padding=2),self.relu
         )
 
         self.branch_pool = nn.Sequential(
-            nn.MaxPool2d(kernel_size=3, stride=1, padding=1),self.relu
+            nn.MaxPool2d(kernel_size=3, stride=1, padding=1),self.relu,
             depthwise_separable_conv(in_channels, int(in_channels/4), kernel_size=1, padding=0),self.relu
         )
 
