@@ -18,12 +18,12 @@ class FeatureExtractionModule(nn.Module):
     def forward(self, x,y):
         conv1r, conv2r, conv3r, conv4r, conv5r = self.backbone(x)
         conv1d, conv2d, conv3d, conv4d, conv5d = self.backbone(y)        
-        print("Backbone Features shape")
+        '''print("Backbone Features shape")
         print("RGB1: ",conv1r.shape,"    Depth1: ",conv1d.shape)
         print("RGB2: ",conv2r.shape,"    Depth2: ",conv2d.shape)
         print("RGB3: ",conv3r.shape,"    Depth3: ",conv3d.shape)
         print("RGB4: ",conv4r.shape,"    Depth4: ",conv4d.shape)
-        print("RGB5: ",conv5r.shape,"    Depth5: ",conv5d.shape)
+        print("RGB5: ",conv5r.shape,"    Depth5: ",conv5d.shape)'''
         
 
         return conv1r, conv2r, conv3r, conv4r, conv5r, conv1d, conv2d, conv3d, conv4d, conv5d # list of tensor that compress model output
@@ -67,7 +67,7 @@ class SaliencyAlignment(nn.Module):
         y = self.eca(y)
         Fxy = x + y
         Fxy_conv = self.relu(self.conv_last(Fxy))
-        print('saliency alignmnet: ', Fxy_conv.shape)
+        #print('saliency alignmnet: ', Fxy_conv.shape)
         return Fxy_conv
 
 class InceptionModuleModified(nn.Module):
@@ -113,7 +113,7 @@ class FeatureAlignmnetModule(nn.Module):
         
     def forward(self, x):
         aligned_x = self.conv(x)
-        print('aligned_x: ',aligned_x.shape)
+        #print('aligned_x: ',aligned_x.shape)
         return aligned_x
 
 
