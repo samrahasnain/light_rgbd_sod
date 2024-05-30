@@ -104,6 +104,7 @@ class Solver(object):
                 pred = np.squeeze(torch.sigmoid(preds)).cpu().data.numpy()
                 pred = (pred - pred.min()) / (pred.max() - pred.min() + 1e-8)
                 multi_fuse = 255 * pred
+                print(multi_fuse.shape)
                 filename = os.path.join(self.config.test_folder, name[:-4] + '_general.png')
                 cv2.imwrite(filename, multi_fuse)
         time_e = time.time()
