@@ -126,7 +126,7 @@ class Decoder(nn.Module):
         self.last_conv = nn.Conv2d(k,1,1,1)
     
     def forward(self, F_rgbd5, F_r5, F_r4, F_r3, F_r2, F_r1,F_d5, F_d4, F_d3, F_d2, F_d1):
-        out5= (F_rgbd5 * F_r5) + (F_rgbd5 * F_d5)
+        out5= (F_rgbd5 .* F_r5) + (F_rgbd5 .* F_d5)
         up_out5 = self.upsample(out5)
         out4 = (up_out5 * F_r4) + (up_out5 * F_d4)
         up_out4 = self.upsample(out4)
@@ -152,12 +152,11 @@ class General(nn.Module):
         self.inceptionmodule = InceptionModuleModified
         self.saliencyalignment = SaliencyAlignment
         self.decoder = Decoder
-        self.last_conv = nn.Conv2d(320,1,1,1)
+        
        
     def forward(self,rgb,depth):
         conv1r, conv2r, conv3r, conv4r, conv5r, conv1d, conv2d, conv3d, conv4d, conv5d = self.FeatureExtractionModule(rgb,depth)
         sal_align = self.saliencyalignment(conv5r, conv5d)
-        F_rgbd5 = self.FAM5(sal_align)
         F_r5 = self.inceptionmodule(self.FAM5(conv5r))
         F_r4 = self.inceptionmodule(self.FAM4(conv4r))
         F_r3 = self.inceptionmodule(self.FAM3(conv3r))
@@ -168,9 +167,9 @@ class General(nn.Module):
         F_d3 = self.FAM3(conv3d)
         F_d2 = self.FAM2(conv2d)
         F_d1 = self.FAM1(conv1d)
-        sal_final = self.decoder(F_rgbd5, F_r5, F_r4, F_r3, F_r2, F_r1,F_d5, F_d4, F_d3, F_d2, F_d1)
-        sal_align_out = self.last_conv(sal_align)
-        return sal_final, sal_align_out
+        sal_final = self.decoder(sal_align, F_r5, F_r4, F_r3, F_r2, F_r1,F_d5, F_d4, F_d3, F_d2, F_d1)
+        
+        return sal_final, sal_align
       
 def build_model(network='mobilenet', base_model_cfg='mobilenet'):
    
