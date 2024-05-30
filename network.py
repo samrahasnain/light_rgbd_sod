@@ -152,6 +152,7 @@ class General(nn.Module):
         self.inceptionmodule = InceptionModuleModified
         self.saliencyalignment = SaliencyAlignment
         self.decoder = Decoder
+        self.last_conv = nn.Conv2d(320,1,1,1)
        
     def forward(self,rgb,depth):
         conv1r, conv2r, conv3r, conv4r, conv5r, conv1d, conv2d, conv3d, conv4d, conv5d = self.FeatureExtractionModule(rgb,depth)
@@ -168,7 +169,8 @@ class General(nn.Module):
         F_d2 = self.FAM2(conv2d)
         F_d1 = self.FAM1(conv1d)
         sal_final = self.decoder(F_rgbd5, F_r5, F_r4, F_r3, F_r2, F_r1,F_d5, F_d4, F_d3, F_d2, F_d1)
-        return sal_final, sal_align
+        sal_align_out = self.last_conv(sal_align)
+        return sal_final, sal_align_out
       
 def build_model(network='mobilenet', base_model_cfg='mobilenet'):
    
