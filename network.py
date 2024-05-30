@@ -126,7 +126,7 @@ class Decoder(nn.Module):
         self.last_conv = nn.Conv2d(k,1,1,1)
     
     def forward(self, F_rgbd5, F_r5, F_r4, F_r3, F_r2, F_r1,F_d5, F_d4, F_d3, F_d2, F_d1):
-        out5= (F_rgbd5 .* F_r5) + (F_rgbd5 .* F_d5)
+        out5= (F_rgbd5 * F_r5) + (F_rgbd5 * F_d5)
         up_out5 = self.upsample(out5)
         out4 = (up_out5 * F_r4) + (up_out5 * F_d4)
         up_out4 = self.upsample(out4)
