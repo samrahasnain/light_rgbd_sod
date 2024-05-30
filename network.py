@@ -71,8 +71,9 @@ class SaliencyAlignment(nn.Module):
         return Fxy_conv
 
 class InceptionModuleModified(nn.Module):
-    def __init__(self, in_channels):
+    def __init__(self):
         super(InceptionModuleModified, self).__init__()
+        in_channels = 16
         self.relu = nn.ReLU(inplace=True)
         self.branch1x1 = nn.Sequential(
             depthwise_separable_conv(in_channels, int(in_channels/4), kernel_size=1, padding=0),self.relu
