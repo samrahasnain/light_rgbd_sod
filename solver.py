@@ -44,10 +44,9 @@ class Solver(object):
                 print('Loading pretrained model to resume training')
                 self.net.load_state_dict(torch.load(self.config.load))  # load pretrained model
         
-        if self.config.cuda==True:
-            self.net = self.net.cuda()
-        else:
-            self.net = self.net
+        '''if self.config.cuda:
+            self.net = self.net.cuda()'''
+       
         
 
         self.lr = self.config.lr
@@ -91,17 +90,15 @@ class Solver(object):
             images, name, im_size, depth = data_batch['image'], data_batch['name'][0], np.asarray(data_batch['size']), \
                                            data_batch['depth']
             with torch.no_grad():
-                if self.config.cuda:
+                '''if self.config.cuda:
                     device = torch.device(self.config.device_id)
                     images = images.to(device)
-                    depth = depth.to(device)
+                    depth = depth.to(device)'''
                 #input = torch.cat((images, depth), dim=0)
-                if self.config.cuda:
-                    torch.cuda.synchronize()
+                #torch.cuda.synchronize()
                 tsince = int(round(time.time()*1000)) 
                 preds,_ = self.net(images,depth)
-                if self.config.cuda:
-                    torch.cuda.synchronize()
+                #torch.cuda.synchronize()
                 ttime_elapsed = int(round(time.time()*1000)) - tsince
                 print ('test time elapsed {}ms'.format(ttime_elapsed))
                 #generate_intermediate_map(in)
