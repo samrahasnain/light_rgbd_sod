@@ -46,6 +46,9 @@ class Solver(object):
         
         if self.config.cuda:
             self.net = self.net.cuda()
+        else:
+            self.net = self.net
+        
 
         self.lr = self.config.lr
         self.wd = self.config.wd
@@ -93,10 +96,12 @@ class Solver(object):
                     images = images.to(device)
                     depth = depth.to(device)
                 #input = torch.cat((images, depth), dim=0)
-                torch.cuda.synchronize()
+                if self.config.cuda:
+                    torch.cuda.synchronize()
                 tsince = int(round(time.time()*1000)) 
                 preds,_ = self.net(images,depth)
-                torch.cuda.synchronize()
+                if self.config.cuda:
+                    torch.cuda.synchronize()
                 ttime_elapsed = int(round(time.time()*1000)) - tsince
                 print ('test time elapsed {}ms'.format(ttime_elapsed))
                 #generate_intermediate_map(in)
