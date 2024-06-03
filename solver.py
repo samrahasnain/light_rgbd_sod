@@ -44,7 +44,7 @@ class Solver(object):
                 print('Loading pretrained model to resume training')
                 self.net.load_state_dict(torch.load(self.config.load))  # load pretrained model
         
-        if self.config.cuda:
+        if self.config.cuda==True:
             self.net = self.net.cuda()
         else:
             self.net = self.net
