@@ -44,14 +44,16 @@ class ECABlock(nn.Module):
         return x * self.sigmoid(y).expand_as(x)
 
 class depthwise_separable_conv(nn.Module):
-    def __init__(self, nin, nout, kernel_size=3, padding=1):
+    def __init__(self, nin, nout, kernel_size=3, padding=1,dilation=1):
         super(depthwise_separable_conv, self).__init__()
-        self.depthwise = nn.Conv2d(nin, nin, kernel_size=kernel_size, padding=padding, groups=nin)
+        self.depthwise = nn.Conv2d(nin, nin, kernel_size=kernel_size, padding=padding, groups=nin,dilation=dilation)
         self.pointwise = nn.Conv2d(nin, nout, kernel_size=1)
+        self.bn = nn.BatchNorm2d(out_channels)
+        self.relu = nn.ReLU()
 
     def forward(self, x):
         out = self.depthwise(x)
-        out = self.pointwise(out)
+        out = self.relu(self.bn(self.pointwise(out)))
         return out
         
 class SaliencyAlignment(nn.Module):
@@ -69,6 +71,32 @@ class SaliencyAlignment(nn.Module):
         Fxy_conv = self.relu(self.conv_last(Fxy))
         #print('saliency alignmnet: ', Fxy_conv.shape)
         return Fxy_conv
+
+
+class MLP(nn.Module):
+    def __init__(self, input_size, hidden_sizes, output_size):
+        super(MLP, self).__init__()
+        
+        # Create the list of fully connected layers (input -> hidden -> output)
+        layers = []
+        in_features = input_size
+        
+        # Create hidden layers
+        for hidden_size in hidden_sizes:
+            layers.append(nn.Linear(in_features, hidden_size))
+            layers.append(nn.ReLU())  # Activation function after each layer
+            in_features = hidden_size
+        
+        # Output layer
+        layers.append(nn.Linear(in_features, output_size))
+        
+        # Define the model as a Sequential block of layers
+        self.model = nn.Sequential(*layers)
+
+    def forward(self, x):
+        return self.model(x)
+
+
 
 class InceptionModuleModified(nn.Module):
     def __init__(self):
@@ -102,9 +130,7 @@ class InceptionModuleModified(nn.Module):
 
         outputs = [branch1x1, branch3x3, branch5x5, branch_pool]
         return torch.cat(outputs, 1)
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
+
 
 class SpatialAttention(nn.Module):
     def __init__(self, kernel_size=7):
@@ -134,6 +160,44 @@ class SpatialAttention(nn.Module):
         out = x * attention
         return out
 
+
+# Custom module with multiple depthwise separable conv layers
+class LKA(nn.Module):
+    def __init__(self, in_channels_list, out_channels_list):
+        super(LKA, self).__init__()
+
+        # Create a list of depthwise separable conv layers using nn.ModuleList
+        self.dsconv = nn.ModuleList([
+            depthwise_separable_conv(in_channels_list[i], out_channels_list[i], kernel_size=3, stride=1, padding=1)
+            for i in range(len(in_channels_list))
+        ])
+        
+        # Create additional depthwise conv layers with dilation=3 for each input/output channel pair
+        self.dsconv_dilated = nn.ModuleList([
+            depthwise_separable_conv(out_channels_list[i], out_channels_list[i], kernel_size=3, stride=1, padding=3, dilation=3)
+            for i in range(len(out_channels_list))
+        ])
+        
+        # Create 1x1 convolution layers for each output channel
+        self.conv1x1 = nn.ModuleList([
+            nn.Conv2d(out_channels_list[i], out_channels_list[i], kernel_size=1)
+            for i in range(len(out_channels_list))
+        ])
+
+    def forward(self, x_list):
+        out_list = []
+        for i in range(len(x_list)):
+            # Step 1: Apply initial depthwise separable convolution
+            x = self.dsconv[i](x_list[i])
+            # Step 2: Apply depthwise separable conv with dilation=3
+            x = self.dsconv_dilated[i](x)
+            # Step 3: Apply 1x1 convolution
+            x = self.conv1x1[i](x)
+            out_list.append(x)
+        return out_list
+
+
+
 class levelEnhancedModule(nn.Module):
     def __init__(self, in_channels_list, out_channels_list):
         super(levelEnhancedModule, self).__init__()
@@ -144,9 +208,22 @@ class levelEnhancedModule(nn.Module):
         
         # Define depthwise separable convolution for each level with varying in/out channels
         self.dsconv = nn.ModuleList([
-            depthwise_separable_conv(in_channels_list[i], out_channels_list[i], 3, 1) 
+            depthwise_separable_conv(in_channels_list[i], out_channels_list[i], 3, 1,1) 
             for i in range(5)
         ])
+
+        # Define LKA for each level with varying in/out channels
+        self.LKA= nn.ModuleList([
+            LKA(in_channels_list[i], out_channels_list[i]) 
+            for i in range(5)
+        ])
+
+        # Define MLP for each level with varying in/out channels
+        self.MLP= nn.ModuleList([
+            MLP(in_channels_list[i], int(in_channels_list[i] * 4),out_channels_list[i]) 
+            for i in range(5)
+        ])
+    
 
     def forward(self, F1r, F2r, F3r, F4r, F5r, F1d, F2d, F3d, F4d, F5d):
         F_r = [F1r, F2r, F3r, F4r, F5r]
