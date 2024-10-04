@@ -18,12 +18,12 @@ class FeatureExtractionModule(nn.Module):
     def forward(self, x,y):
         conv1r, conv2r, conv3r, conv4r, conv5r = self.backbone(x)
         conv1d, conv2d, conv3d, conv4d, conv5d = self.backbone(y)        
-        '''print("Backbone Features shape")
+        print("Backbone Features shape")
         print("RGB1: ",conv1r.shape,"    Depth1: ",conv1d.shape)
         print("RGB2: ",conv2r.shape,"    Depth2: ",conv2d.shape)
         print("RGB3: ",conv3r.shape,"    Depth3: ",conv3d.shape)
         print("RGB4: ",conv4r.shape,"    Depth4: ",conv4d.shape)
-        print("RGB5: ",conv5r.shape,"    Depth5: ",conv5d.shape)'''
+        print("RGB5: ",conv5r.shape,"    Depth5: ",conv5d.shape)
         
 
         return conv1r, conv2r, conv3r, conv4r, conv5r, conv1d, conv2d, conv3d, conv4d, conv5d # list of tensor that compress model output
@@ -102,19 +102,94 @@ class InceptionModuleModified(nn.Module):
 
         outputs = [branch1x1, branch3x3, branch5x5, branch_pool]
         return torch.cat(outputs, 1)
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+class SpatialAttention(nn.Module):
+    def __init__(self, kernel_size=7):
+        super(SpatialAttention, self).__init__()
         
-class FeatureAlignmnetModule(nn.Module):
-    def __init__(self,in_channels):
-        super(FeatureAlignmnetModule, self).__init__()
-        k=16
-        self.conv = nn.Sequential(
-            depthwise_separable_conv(in_channels, k , kernel_size=1, padding=0), nn.ReLU()
-        )    
+        # Ensure kernel_size is odd for padding consistency
+        assert kernel_size % 2 == 1, "Kernel size must be odd"
+        padding = kernel_size // 2
         
+        # Convolutional layer for the spatial attention map
+        self.conv = nn.Conv2d(2, 1, kernel_size=kernel_size, padding=padding, bias=False)
+        self.sigmoid = nn.Sigmoid()
+
     def forward(self, x):
-        aligned_x = self.conv(x)
-        #print('aligned_x: ',aligned_x.shape)
-        return aligned_x
+        # Apply average pooling and max pooling along the channel axis
+        avg_out = torch.mean(x, dim=1, keepdim=True)  # (batch, 1, height, width)
+        max_out, _ = torch.max(x, dim=1, keepdim=True)  # (batch, 1, height, width)
+        
+        # Concatenate the average and max pooled features along the channel dimension
+        concat = torch.cat([avg_out, max_out], dim=1)  # (batch, 2, height, width)
+        
+        # Pass the concatenated result through a convolution and sigmoid to generate attention map
+        attention = self.conv(concat)
+        attention = self.sigmoid(attention)  # (batch, 1, height, width)
+        
+        # Multiply input with attention map to get refined output
+        out = x * attention
+        return out
+
+class levelEnhancedModule(nn.Module):
+    def __init__(self, in_channels_list, out_channels_list):
+        super(levelEnhancedModule, self).__init__()
+        self.upsample = nn.Upsample(scale_factor=2, mode='bilinear')
+        
+        # Define Spatial Attention for each level
+        self.sa = nn.ModuleList([SpatialAttention(3) for _ in range(5)])
+        
+        # Define depthwise separable convolution for each level with varying in/out channels
+        self.dsconv = nn.ModuleList([
+            depthwise_separable_conv(in_channels_list[i], out_channels_list[i], 3, 1) 
+            for i in range(5)
+        ])
+
+    def forward(self, F1r, F2r, F3r, F4r, F5r, F1d, F2d, F3d, F4d, F5d):
+        F_r = [F1r, F2r, F3r, F4r, F5r]
+        F_d = [F1d, F2d, F3d, F4d, F5d]
+
+        F_Rme = []
+        F_Dme = []
+        F_F   = []
+        for i in range(5):
+            # Level i+1 RGB modality enhanced features FiRme
+            F_rle = F_r[i]
+            F_dle = F_d[i]
+            
+            # Apply spatial attention on F_rle
+            F_rle_sa = self.sa[i](F_rle)
+            
+            # Concatenate the original and spatially attended features
+            F_rle_cat_sa = torch.cat((F_rle, F_rle_sa), dim=1)
+            
+            # Element-wise multiplication of concatenated RGB and depth modality enhanced features
+            F_rdle = F_rle_cat_sa * F_dle
+            
+            # Apply depthwise separable convolution for the current level
+            F_rme = self.dsconv[i](F_rdle)
+            # ENHANCEMNET ON D MODALITY Apply spatial attention on F_dle
+            F_dle_sa = self.sa[i](F_dle)
+            
+            # Concatenate the original and spatially attended features
+            F_dle_cat_sa = torch.cat((F_dle, F_dle_sa), dim=1)
+            
+            # Element-wise multiplication of concatenated RGB and depth modality enhanced features
+            F_drle = F_dle_cat_sa * F_rle
+            
+            # Apply depthwise separable convolution for the current level
+            F_dme = self.dsconv[i](F_drle)
+            F_f = self.dsconv[i](F_rme+F_dme)
+            F_F.append(F_f)
+            # Append results for each level
+            F_Rme.append(F_rme)
+            F_Dme.append(F_dme)
+
+        return F_Rme, F_Dme
+
 
 
         
@@ -144,18 +219,15 @@ class General(nn.Module):
     def __init__(self,FeatureExtractionModule, InceptionModuleModified, SaliencyAlignment,  Decoder):
         super(General, self).__init__()
         self.FeatureExtractionModule = FeatureExtractionModule
-        self.FAM1 = FeatureAlignmnetModule(16)
-        self.FAM2 = FeatureAlignmnetModule(24)
-        self.FAM3 = FeatureAlignmnetModule(32)
-        self.FAM4 = FeatureAlignmnetModule(96)
-        self.FAM5 = FeatureAlignmnetModule(320)
+        self.levelEnhancedModule = levelEnhancedModule
         self.inceptionmodule = InceptionModuleModified
         self.saliencyalignment = SaliencyAlignment
         self.decoder = Decoder
         
        
     def forward(self,rgb,depth):
-        conv1r, conv2r, conv3r, conv4r, conv5r, conv1d, conv2d, conv3d, conv4d, conv5d = self.FeatureExtractionModule(rgb,depth)
+        F1r, F2r, F3r, F4r, F5r, F1d, F2d, F3d, F4d, F5d = self.FeatureExtractionModule(rgb,depth)
+        F1rle, F2rle, F3rle, F4rle, F5rle, F1dle, F2dle, F3dle, F4dle, F5dle = self.levelEnhancedModule(F1r, F2r, F3r, F4r, F5r, F1d, F2d, F3d, F4d, F5d)
         sal_align = self.saliencyalignment(conv5r, conv5d)
         F_r5 = self.inceptionmodule(self.FAM5(conv5r))
         F_r4 = self.inceptionmodule(self.FAM4(conv4r))
