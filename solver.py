@@ -112,7 +112,32 @@ class Solver(object):
         print('Speed: %f FPS' % (img_num / (time_e - time_s)))
         print('Test Done!')
     
-  
+    
+
+    def iou_loss_saliency(self,pred_map, target_map, threshold=0.5):
+
+        # Binarize the saliency maps using the given threshold
+        pred_mask = (pred_map > threshold).float()
+        target_mask = (target_map > threshold).float()
+
+        # Flatten the masks
+        pred_mask = pred_mask.view(-1)
+        target_mask = target_mask.view(-1)
+
+        # Calculate intersection and union
+        intersection = (pred_mask * target_mask).sum()
+        union = pred_mask.sum() + target_mask.sum() - intersection
+
+        # Compute IoU
+        iou = intersection / torch.clamp(union, min=1e-6)
+
+        # Compute IoU loss (1 - IoU)
+        iou_loss = 1 - iou
+
+        return iou_loss
+
+
+
     # training phase
     def train(self):
         iter_num = len(self.train_loader.dataset) // self.config.batch_size
@@ -136,16 +161,18 @@ class Solver(object):
                 self.optimizer.zero_grad()
                 sal_label_coarse = F.interpolate(sal_label, size_coarse, mode='bilinear', align_corners=True)
                 
-                sal_final, coarse_sal_align = self.net(sal_image,sal_depth)
+                Fd1,Fd2,Fd3,Fd4,Fd5,Fr,Fd = self.net(sal_image,sal_depth)
+                Fd1_loss = self.iou_loss_saliency(Fd1,sal_label,0.5)
+                Fd2_loss = self.iou_loss_saliency(Fd2,sal_label,0.5)
+                Fd3_loss = self.iou_loss_saliency(Fd3,sal_label,0.5)
+                Fd4_loss = self.iou_loss_saliency(Fd4,sal_label,0.5)
+                Fd5_loss = self.iou_loss_saliency(Fd5,sal_label,0.5)
+
+                Rsal_final_loss =  F.binary_cross_entropy_with_logits(Fr, sal_label, reduction='sum')
+                Dsal_final_loss =  F.binary_cross_entropy_with_logits(Fd, sal_label, reduction='sum')
+
                 
-                #sal_loss_coarse_rgb =  F.binary_cross_entropy_with_logits(coarse_sal_rgb, sal_label_coarse, reduction='sum')
-                sal_loss_coarse =  F.binary_cross_entropy_with_logits(coarse_sal_align, sal_label_coarse, reduction='sum')
-                sal_final_loss =  F.binary_cross_entropy_with_logits(sal_final, sal_label, reduction='sum')
-                #edge_loss_rgbd0=F.smooth_l1_loss(sal_edge_rgbd0,sal_edge)
-                #edge_loss_rgbd1=F.smooth_l1_loss(sal_edge_rgbd1,sal_edge)
-                #edge_loss_rgbd2=F.smooth_l1_loss(sal_edge_rgbd2,sal_edge)
-                
-                sal_loss_fuse = sal_final_loss + sal_loss_coarse
+                sal_loss_fuse =  Rsal_final_loss + Dsal_final_loss + 1.0*Fd1_loss, 0.5*Fd2_loss, Fd3_loss*0.25, 0.125*Fd4_loss, 0.0625*Fd5_loss
                 sal_loss = sal_loss_fuse/ (self.iter_size * self.config.batch_size)
                 r_sal_loss += sal_loss.data
                 r_sal_loss_item+=sal_loss.item() * sal_image.size(0)
