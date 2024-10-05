@@ -189,9 +189,9 @@ class levelEnhancedModule(nn.Module):
             # Append results for each level
             F_Rme.append(F_rme)
             F_Dme.append(F_dme)
-        for i in range(5,-1,-1):
+        for i in range(4,-1,-1):
             # Level i+1 RGB modality enhanced features FiRme
-            if i==5:
+            if i==4:
                 F_Fi = F_F[i]
                 VAB = self.MLP[i](self.LKA[i](F_Fi)*F_Fi)
                 
