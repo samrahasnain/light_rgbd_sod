@@ -115,11 +115,11 @@ class levelEnhancedModule(nn.Module):
             depthwise_separable_conv(in_channels_list[i], out_channels_list[i], 3, 1,1) 
             for i in range(5)
         ])
-        in_channels_list_n = [32,80,112,256,832]
-        out_channels_list_n = [32,48,64,192,640]
+        in_channels_list_n = [80,112,256,832]
+        out_channels_list_n = [32,48,64,192]
         self.dsconv_n = nn.ModuleList([
             depthwise_separable_conv(in_channels_list_n[i], out_channels_list_n[i], 3, 1,1) 
-            for i in range(5)
+            for i in range(4)
         ])
 
         # Define LKA for each level with varying in/out channels
