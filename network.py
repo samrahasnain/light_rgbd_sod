@@ -227,7 +227,7 @@ class General(nn.Module):
         self.FeatureExtractionModule = FeatureExtractionModule
         self.levelEnhancedModule = levelEnhancedModule
         self.decoder = Decoder
-        in_channels_list = [16,24,32,96,320]
+        in_channels_list = [32,48,64,192,640,24]
         self.conv1x1 = nn.ModuleList([
             nn.Conv2d(in_channels_list[i], 1, kernel_size=1)
             for i in range(len(in_channels_list))
@@ -239,7 +239,7 @@ class General(nn.Module):
         F_Rle , F_Dle = self.decoder(F_Fd, F1r, F2r, F3r, F4r, F5r, F1d, F2d, F3d, F4d, F5d)
         for i in range(5):
             F_Fd[i] = self.conv1x1[i](F_Fd[i])
-        return F_Fd[0],F_Fd[1],F_Fd[2],F_Fd[3],F_Fd[4],self.conv1x1[1](F_Rle[1] ),self.conv1x1[1]( F_Dle[1])
+        return F_Fd[0],F_Fd[1],F_Fd[2],F_Fd[3],F_Fd[4],self.conv1x1[5](F_Rle[1] ),self.conv1x1[5]( F_Dle[1])
       
 def build_model(network='mobilenet', base_model_cfg='mobilenet'):
    
