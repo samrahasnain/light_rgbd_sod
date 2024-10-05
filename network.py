@@ -63,6 +63,9 @@ class MLP(nn.Module):
         self.model = nn.Sequential(*layers)
 
     def forward(self, x):
+        # Flatten the input tensor if necessary
+        if len(x.size()) > 2:
+            x = x.view(x.size(0), -1)  # Flatten the input, keeping batch size intact
         return self.model(x)
 
 class SpatialAttention(nn.Module):
