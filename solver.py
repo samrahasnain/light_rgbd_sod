@@ -44,8 +44,8 @@ class Solver(object):
                 print('Loading pretrained model to resume training')
                 self.net.load_state_dict(torch.load(self.config.load))  # load pretrained model
         
-        '''if self.config.cuda:
-            self.net = self.net.cuda()'''
+        if self.config.cuda:
+            self.net = self.net.cuda()
        
         
 
@@ -54,7 +54,7 @@ class Solver(object):
 
         self.optimizer = torch.optim.Adam(self.net.parameters(), lr=self.lr, weight_decay=self.wd)
 
-        #self.print_network(self.net, 'General Network Structure')
+        self.print_network(self.net, 'General Network Structure')
 
     # print the network information and parameter numbers
     def print_network(self, model, name):
