@@ -160,24 +160,24 @@ class levelEnhancedModule(nn.Module):
             F_dle = F_d[i]
             
             # Apply spatial attention on F_rle
-            F_rle_sa = self.sa[i](F_rle)
+            F_rle_sa = self.sa[i](F_rle)* F_dle
             
             # Concatenate the original and spatially attended features
             F_rle_cat_sa = torch.cat((F_rle, F_rle_sa), dim=1)
             print(F_rle_cat_sa.shape, F_dle.shape)
             # Element-wise multiplication of concatenated RGB and depth modality enhanced features
-            F_rdle = F_rle_cat_sa * F_dle
+            F_rdle = F_rle_cat_sa 
             
             # Apply depthwise separable convolution for the current level
             F_rme = self.dsconv[i](F_rdle)
             # ENHANCEMNET ON D MODALITY Apply spatial attention on F_dle
-            F_dle_sa = self.sa[i](F_dle)
+            F_dle_sa = self.sa[i](F_dle)* F_rle
             
             # Concatenate the original and spatially attended features
             F_dle_cat_sa = torch.cat((F_dle, F_dle_sa), dim=1)
             
             # Element-wise multiplication of concatenated RGB and depth modality enhanced features
-            F_drle = F_dle_cat_sa * F_rle
+            F_drle = F_dle_cat_sa 
             
             # Apply depthwise separable convolution for the current level
             F_dme = self.dsconv[i](F_drle)
