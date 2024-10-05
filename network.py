@@ -211,6 +211,7 @@ class levelEnhancedModule(nn.Module):
             # Append results for each level
             F_Rme.append(F_rme)
             F_Dme.append(F_dme)
+            print("F_Fi",i,F_F[i].shape)
         for i in range(4,-1,-1):
             # Level i+1 RGB modality enhanced features FiRme
             if i==4:
@@ -224,7 +225,7 @@ class levelEnhancedModule(nn.Module):
                 F_Fd[i]= VAB
 
             #F_Fd.insert(0,VAB)
-            print("F_Fd",F_Fd[4].shape)
+            print("F_Fd",i,"=",F_Fd[i].shape)
         return F_Fd
 
 class Decoder(nn.Module):
