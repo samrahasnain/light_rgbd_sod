@@ -198,7 +198,7 @@ class Decoder(nn.Module):
         super(Decoder,self).__init__()
         self.upsample = nn.Upsample(scale_factor=2, mode='bilinear')
         self.conv1x1 = nn.ModuleList([
-            nn.Conv2d(out_channels_list[i], out_channels_list[i], kernel_size=1)
+            nn.Conv2d(in_channels_list[i], out_channels_list[i], kernel_size=1)
             for i in range(len(out_channels_list))
         ])
         
