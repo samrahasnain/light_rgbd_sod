@@ -34,7 +34,7 @@ class depthwise_separable_conv(nn.Module):
         super(depthwise_separable_conv, self).__init__()
         self.depthwise = nn.Conv2d(nin, nin, kernel_size=kernel_size, padding=padding, groups=nin,dilation=dilation)
         self.pointwise = nn.Conv2d(nin, nout, kernel_size=1)
-        self.bn = nn.BatchNorm2d(out_channels)
+        self.bn = nn.BatchNorm2d(nout)
         self.relu = nn.ReLU()
 
     def forward(self, x):
