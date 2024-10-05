@@ -141,7 +141,7 @@ class levelEnhancedModule(nn.Module):
         hidden_sizes = [in_channels * 4 for in_channels in in_channels_list]
         # Define MLP for each level with varying in/out channels
         self.MLP= nn.ModuleList([
-            MLP(in_channels_list[i], hidden_sizes[i],out_channels_list[i]) 
+            MLP(in_channels_list[i], hidden_sizes,out_channels_list[i]) 
             for i in range(5)
         ])
     
