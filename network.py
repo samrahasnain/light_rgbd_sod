@@ -183,7 +183,9 @@ class levelEnhancedModule(nn.Module):
                 F_Fd[i]= VAB
             else:
                 F_Fi = F_F[i]
+                
                 F_Fe = F_Fi + self.dsconv_n[i](torch.cat((F_Fi,self.upsample(F_Fd[i+1])),dim=1))
+                print("ffe",F_Fe.shape)
                 VAB = self.LKA[i](F_Fe)*F_Fi
                 F_Fd[i]= VAB
 
