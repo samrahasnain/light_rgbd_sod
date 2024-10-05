@@ -104,7 +104,7 @@ class LKA(nn.Module):
             
         self.dsconv_dilated = depthwise_separable_conv(out_channels_list, out_channels_list, kernel_size=3, padding=3, dilation=3)
             
-        self.conv1x1 = nn.Conv2d(out_channels_list[i], out_channels_list[i], kernel_size=1)
+        self.conv1x1 = nn.Conv2d(out_channels_list, out_channels_list, kernel_size=1)
            
 
     def forward(self, x_list):
