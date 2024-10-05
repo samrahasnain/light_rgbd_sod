@@ -250,5 +250,5 @@ def build_model(network='mobilenet', base_model_cfg='mobilenet'):
    
         backbone = mobilenet_v2()
         in_channels_list = [32,48,64,192,640]
-        out_channels_list = [16,24,32,96,320]
+        out_channels_list = [32,48,64,192,640]
         return General(FeatureExtractionModule(backbone),levelEnhancedModule(in_channels_list,out_channels_list),Decoder)
