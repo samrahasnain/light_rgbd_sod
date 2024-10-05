@@ -55,7 +55,7 @@ class MLP(nn.Module):
             layers.append(nn.Linear(in_features, hidden_size))
             layers.append(nn.ReLU())  # Activation function after each layer
             in_features = hidden_size
-        
+        print(in_features.shape)
         # Output layer
         layers.append(nn.Linear(in_features, output_size))
         
