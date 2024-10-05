@@ -232,6 +232,7 @@ class levelEnhancedModule(nn.Module):
         F_Rme = []
         F_Dme = []
         F_F   = []
+        F_Fd  = []
         for i in range(5):
             # Level i+1 RGB modality enhanced features FiRme
             F_rle = F_r[i]
@@ -269,7 +270,13 @@ class levelEnhancedModule(nn.Module):
             if i==5:
                 F_Fi = F_F[i]
                 VAB = self.MLP[i](self.LKA[i](F_Fi)*F_Fi)
+                
             else:
+                F_Fi = F_F[i]
+                F_Fe = F_Fi + self.dsconv[i](torch.cat((F_Fi,self.upsample(F_Fd[i+1])),dim=1))
+                VAB = self.MLP[i](self.LKA[i](self.dsconv[i](torch.cat((F_Fe,self.upsample(F_Fd[i+1])),dim=1)))
+
+            F_Fd.insert(0,VAB)
                 
         return F_Rme, F_Dme
 
