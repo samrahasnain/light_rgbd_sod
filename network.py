@@ -99,35 +99,23 @@ class LKA(nn.Module):
     def __init__(self, in_channels_list, out_channels_list):
         super(LKA, self).__init__()
 
-        # Create a list of depthwise separable conv layers using nn.ModuleList
-        self.dsconv = nn.ModuleList([
-            depthwise_separable_conv(in_channels_list[i], out_channels_list[i], kernel_size=3, stride=1, padding=1)
-            for i in range(len(in_channels_list))
-        ])
-        
-        # Create additional depthwise conv layers with dilation=3 for each input/output channel pair
-        self.dsconv_dilated = nn.ModuleList([
-            depthwise_separable_conv(out_channels_list[i], out_channels_list[i], kernel_size=3, stride=1, padding=3, dilation=3)
-            for i in range(len(out_channels_list))
-        ])
-        
-        # Create 1x1 convolution layers for each output channel
-        self.conv1x1 = nn.ModuleList([
-            nn.Conv2d(out_channels_list[i], out_channels_list[i], kernel_size=1)
-            for i in range(len(out_channels_list))
-        ])
+       
+        self.dsconv =  depthwise_separable_conv(in_channels_list, out_channels_list, kernel_size=3, stride=1, padding=1)
+            
+        self.dsconv_dilated = depthwise_separable_conv(out_channels_list, out_channels_list, kernel_size=3, stride=1, padding=3, dilation=3)
+            
+        self.conv1x1 = nn.Conv2d(out_channels_list[i], out_channels_list[i], kernel_size=1)
+           
 
     def forward(self, x_list):
-        out_list = []
-        for i in range(len(x_list)):
-            # Step 1: Apply initial depthwise separable convolution
-            x = self.dsconv[i](x_list[i])
-            # Step 2: Apply depthwise separable conv with dilation=3
-            x = self.dsconv_dilated[i](x)
-            # Step 3: Apply 1x1 convolution
-            x = self.conv1x1[i](x)
-            out_list.append(x)
-        return out_list
+
+            x = self.dsconv(x_list)
+           
+            x = self.dsconv_dilated(x)
+           
+            x = self.conv1x1(x)
+            
+        return x
 
 
 
