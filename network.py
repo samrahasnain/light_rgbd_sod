@@ -207,7 +207,7 @@ class levelEnhancedModule(nn.Module):
             else:
                 F_Fi = F_F[i]
                 F_Fe = F_Fi + self.dsconv[i](torch.cat((F_Fi,self.upsample(F_Fd[i+1])),dim=1))
-                VAB = self.MLP[i](self.LKA[i](self.dsconv[i](torch.cat((F_Fe,self.upsample(F_Fd[i+1])),dim=1)))
+                VAB = self.MLP[i](self.LKA[i](self.dsconv[i](torch.cat((F_Fe,self.upsample(F_Fd[i+1])),dim=1))))
 
             F_Fd.insert(0,VAB)
                 
