@@ -179,14 +179,14 @@ class levelEnhancedModule(nn.Module):
             # Level i+1 RGB modality enhanced features FiRme
             if i==4:
                 F_Fi = F_F[i]
-                VAB = self.LKA[i](F_Fi)*F_Fi
+                VAB = self.LKA[i](F_Fi*F_Fi)
                 F_Fd[i]= VAB
             else:
                 F_Fi = F_F[i]
                 
                 F_Fe = F_Fi + self.dsconv_n[i](torch.cat((F_Fi,self.upsample(F_Fd[i+1])),dim=1))
                 print("ffe",F_Fe.shape)
-                VAB = self.LKA[i](F_Fe)*F_Fi
+                VAB = self.LKA[i](F_Fe*F_Fi)
                 F_Fd[i]= VAB
 
             #F_Fd.insert(0,VAB)
@@ -212,6 +212,7 @@ class Decoder(nn.Module):
             F_dle = F_d[i] + self.conv1x1(torch.cat((F_d[i],self.upsample(F_Fd[i+1])),dim=1))
             F_Rle.append(F_rle)
             F_Dle.append(F_dle)
+            print(F_rle.shape)
         F_Rle.append(F5r)
         F_Dle.append(F5d)   
         return F_Rle, F_Dle
@@ -240,4 +241,4 @@ def build_model(network='mobilenet', base_model_cfg='mobilenet'):
         backbone = mobilenet_v2()
         in_channels_list = [32,48,64,192,640]
         out_channels_list = [32,48,64,192,640]
-        return General(FeatureExtractionModule(backbone),levelEnhancedModule(in_channels_list,out_channels_list),Decoder)
+        return General(FeatureExtractionModule(backbone),levelEnhancedModule(in_channels_list,out_channels_list),Decoder(in_channels_list,out_channels_list))
