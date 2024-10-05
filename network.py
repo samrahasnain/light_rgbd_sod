@@ -42,12 +42,11 @@ class depthwise_separable_conv(nn.Module):
         out = self.relu(self.bn(self.pointwise(out)))
         return out
         
-import torch
-import torch.nn as nn
 
-class SpatialMLP(nn.Module):
+
+class MLP(nn.Module):
     def __init__(self, in_channels, hidden_sizes, out_channels):
-        super(SpatialMLP, self).__init__()
+        super(MLP, self).__init__()
         
         layers = []
         in_features = in_channels  # Starting with the number of channels
@@ -84,18 +83,7 @@ class SpatialMLP(nn.Module):
         
         return x
 
-# Example usage
-input_tensor = torch.randn(1, 32, 160, 160)  # Input tensor with shape [1, 32, 160, 160]
 
-in_channels = 32  # Number of input channels
-hidden_sizes = [64, 128]  # Hidden layer sizes
-out_channels = 32  # We want the output to also have 32 channels
-
-mlp = SpatialMLP(in_channels, hidden_sizes, out_channels)
-
-# Apply the MLP to the input tensor
-output = mlp(input_tensor)
-print(output.shape)  # Output shape will be [1, 32, 160, 160]
 
 
 class SpatialAttention(nn.Module):
