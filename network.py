@@ -234,7 +234,7 @@ class General(nn.Module):
         F_Fd = self.levelEnhancedModule(F1r, F2r, F3r, F4r, F5r, F1d, F2d, F3d, F4d, F5d)
         F_Rle , F_Dle = self.decoder(F_Fd, F1r, F2r, F3r, F4r, F5r, F1d, F2d, F3d, F4d, F5d)
         
-        return F_Fd[1],F_Fd[2],F_Fd[3],F_Fd[4],F_Fd[5],F_Rle[2] , F_Dle[2]
+        return F_Fd[0],F_Fd[1],F_Fd[2],F_Fd[3],F_Fd[4],F_Rle[1] , F_Dle[1]
       
 def build_model(network='mobilenet', base_model_cfg='mobilenet'):
    
