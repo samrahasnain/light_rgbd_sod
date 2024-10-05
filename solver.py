@@ -182,7 +182,7 @@ class Solver(object):
 
                 
                 sal_loss_fuse =  Rsal_final_loss + Dsal_final_loss + 1.0*Fd1_loss, 0.5*Fd2_loss, Fd3_loss*0.25, 0.125*Fd4_loss, 0.0625*Fd5_loss
-                sal_loss = sal_loss_fuse/ (self.iter_size * self.config.batch_size)
+                sal_loss = sal_loss_fuse
                 r_sal_loss += sal_loss.data
                 r_sal_loss_item+=sal_loss.item() * sal_image.size(0)
                 sal_loss.backward()
