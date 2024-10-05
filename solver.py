@@ -162,6 +162,8 @@ class Solver(object):
                 sal_label_coarse = F.interpolate(sal_label, size_coarse, mode='bilinear', align_corners=True)
                 
                 Fd1,Fd2,Fd3,Fd4,Fd5,Fr,Fd = self.net(sal_image,sal_depth)
+                print("Solver")
+                print(Fd1.shape,Fd2.shape,Fr.shape,Fd.shape)
                 Fd1_loss = self.iou_loss_saliency(Fd1,sal_label,0.5)
                 Fd2_loss = self.iou_loss_saliency(Fd2,sal_label,0.5)
                 Fd3_loss = self.iou_loss_saliency(Fd3,sal_label,0.5)
