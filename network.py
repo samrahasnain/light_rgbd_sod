@@ -100,9 +100,9 @@ class LKA(nn.Module):
         super(LKA, self).__init__()
 
        
-        self.dsconv =  depthwise_separable_conv(in_channels_list, out_channels_list, kernel_size=3, stride=1, padding=1)
+        self.dsconv =  depthwise_separable_conv(in_channels_list, out_channels_list, kernel_size=3, padding=1)
             
-        self.dsconv_dilated = depthwise_separable_conv(out_channels_list, out_channels_list, kernel_size=3, stride=1, padding=3, dilation=3)
+        self.dsconv_dilated = depthwise_separable_conv(out_channels_list, out_channels_list, kernel_size=3, padding=3, dilation=3)
             
         self.conv1x1 = nn.Conv2d(out_channels_list[i], out_channels_list[i], kernel_size=1)
            
