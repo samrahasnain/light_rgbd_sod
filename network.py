@@ -44,44 +44,6 @@ class depthwise_separable_conv(nn.Module):
         
 
 
-class MLP(nn.Module):
-    def __init__(self, in_channels, hidden_sizes, out_channels):
-        super(MLP, self).__init__()
-        
-        layers = []
-        in_features = in_channels  # Starting with the number of channels
-        
-        # Create hidden layers
-        for hidden_size in hidden_sizes:
-            layers.append(nn.Linear(in_features, hidden_size))
-            layers.append(nn.ReLU())
-            in_features = hidden_size
-        
-        # Output layer
-        layers.append(nn.Linear(in_features, out_channels))
-        
-        # Define the model as a Sequential block of layers
-        self.model = nn.Sequential(*layers)
-    
-    def forward(self, x):
-        batch_size, channels, height, width = x.size()  # Extract the dimensions
-        
-        # Flatten the spatial dimensions
-        x = x.view(batch_size, channels, height * width)  # Shape: [1, 32, 160*160]
-        
-        # Transpose to apply the MLP on each spatial location across channels
-        x = x.permute(0, 2, 1)  # Shape: [1, 160*160, 32] (Batch, Flattened Spatial, Channels)
-        
-        # Apply the MLP
-        x = self.model(x)  # Shape: [1, 160*160, 32] after passing through the MLP
-        
-        # Transpose back to [Batch, Channels, Height*Width]
-        x = x.permute(0, 2, 1)  # Shape: [1, 32, 160*160]
-        
-        # Reshape back to the original spatial dimensions
-        x = x.view(batch_size, channels, height, width)  # Shape: [1, 32, 160, 160]
-        
-        return x
 
 
 
@@ -153,6 +115,12 @@ class levelEnhancedModule(nn.Module):
             depthwise_separable_conv(in_channels_list[i], out_channels_list[i], 3, 1,1) 
             for i in range(5)
         ])
+        in_channels_list_n = [32,80,112,256,832]
+        out_channels_list_n = [32,48,64,192,640]
+        self.dsconv_n = nn.ModuleList([
+            depthwise_separable_conv(in_channels_list_n[i], out_channels_list_n[i], 3, 1,1) 
+            for i in range(5)
+        ])
 
         # Define LKA for each level with varying in/out channels
         self.LKA= nn.ModuleList([
@@ -215,7 +183,7 @@ class levelEnhancedModule(nn.Module):
                 F_Fd[i]= VAB
             else:
                 F_Fi = F_F[i]
-                F_Fe = F_Fi + self.dsconv[i](torch.cat((F_Fi,self.upsample(F_Fd[i+1])),dim=1))
+                F_Fe = F_Fi + self.dsconv_n[i](torch.cat((F_Fi,self.upsample(F_Fd[i+1])),dim=1))
                 VAB = self.LKA[i](F_Fe)*F_Fi
                 F_Fd[i]= VAB
 
