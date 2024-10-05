@@ -208,8 +208,8 @@ class Decoder(nn.Module):
         F_Rle = []
         F_Dle = []
         for i in range(4):
-            F_rle = F_r[i] + self.conv1x1(torch.cat((F_r[i],self.upsample(F_Fd[i+1])),dim=1))
-            F_dle = F_d[i] + self.conv1x1(torch.cat((F_d[i],self.upsample(F_Fd[i+1])),dim=1))
+            F_rle = F_r[i] + self.conv1x1[i](torch.cat((F_r[i],self.upsample(F_Fd[i+1])),dim=1))
+            F_dle = F_d[i] + self.conv1x1[i](torch.cat((F_d[i],self.upsample(F_Fd[i+1])),dim=1))
             F_Rle.append(F_rle)
             F_Dle.append(F_dle)
             print(F_rle.shape)
