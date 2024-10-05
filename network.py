@@ -159,12 +159,7 @@ class levelEnhancedModule(nn.Module):
             LKA(in_channels_list[i], out_channels_list[i]) 
             for i in range(5)
         ])
-        hidden_sizes = [in_channels * 4 for in_channels in in_channels_list]
-        # Define MLP for each level with varying in/out channels
-        self.MLP= nn.ModuleList([
-            MLP(in_channels_list[i], hidden_sizes,out_channels_list[i]) 
-            for i in range(5)
-        ])
+     
     
 
     def forward(self, F1r, F2r, F3r, F4r, F5r, F1d, F2d, F3d, F4d, F5d):
@@ -216,12 +211,12 @@ class levelEnhancedModule(nn.Module):
             # Level i+1 RGB modality enhanced features FiRme
             if i==4:
                 F_Fi = F_F[i]
-                VAB = self.MLP[i](self.LKA[i](F_Fi)*F_Fi)
+                VAB = self.LKA[i](F_Fi)*F_Fi
                 F_Fd[i]= VAB
             else:
                 F_Fi = F_F[i]
                 F_Fe = F_Fi + self.dsconv[i](torch.cat((F_Fi,self.upsample(F_Fd[i+1])),dim=1))
-                VAB = self.MLP[i](self.LKA[i](self.dsconv[i](torch.cat((F_Fe,self.upsample(F_Fd[i+1])),dim=1))))
+                VAB = self.LKA[i](F_Fe)*F_Fi
                 F_Fd[i]= VAB
 
             #F_Fd.insert(0,VAB)
