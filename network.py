@@ -222,7 +222,7 @@ class levelEnhancedModule(nn.Module):
                 VAB = self.MLP[i](self.LKA[i](self.dsconv[i](torch.cat((F_Fe,self.upsample(F_Fd[i+1])),dim=1))))
 
             F_Fd.insert(0,VAB)
-            print(F_Fd[4].shape)
+            print("F_Fd",F_Fd[4].shape)
         return F_Fd
 
 class Decoder(nn.Module):
