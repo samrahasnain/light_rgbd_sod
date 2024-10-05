@@ -164,7 +164,7 @@ class levelEnhancedModule(nn.Module):
             
             # Concatenate the original and spatially attended features
             F_rle_cat_sa = torch.cat((F_rle, F_rle_sa), dim=1)
-            
+            print(F_rle_cat_sa.shape, F_dle.shape)
             # Element-wise multiplication of concatenated RGB and depth modality enhanced features
             F_rdle = F_rle_cat_sa * F_dle
             
