@@ -141,7 +141,7 @@ class levelEnhancedModule(nn.Module):
 
         # Define MLP for each level with varying in/out channels
         self.MLP= nn.ModuleList([
-            MLP(in_channels_list[i], int(in_channels_list[i] * 4),out_channels_list[i]) 
+            MLP(in_channels_list[i], in_channels_list[i] * 4,out_channels_list[i]) 
             for i in range(5)
         ])
     
