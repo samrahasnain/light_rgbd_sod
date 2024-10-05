@@ -115,7 +115,7 @@ class LKA(nn.Module):
            
             x = self.conv1x1(x)
             
-        return x
+            return x
 
 
 
