@@ -18,12 +18,12 @@ class FeatureExtractionModule(nn.Module):
     def forward(self, x,y):
         conv1r, conv2r, conv3r, conv4r, conv5r = self.backbone(x)
         conv1d, conv2d, conv3d, conv4d, conv5d = self.backbone(y)        
-        print("Backbone Features shape")
+        '''print("Backbone Features shape")
         print("RGB1: ",conv1r.shape,"    Depth1: ",conv1d.shape)
         print("RGB2: ",conv2r.shape,"    Depth2: ",conv2d.shape)
         print("RGB3: ",conv3r.shape,"    Depth3: ",conv3d.shape)
         print("RGB4: ",conv4r.shape,"    Depth4: ",conv4d.shape)
-        print("RGB5: ",conv5r.shape,"    Depth5: ",conv5d.shape)
+        print("RGB5: ",conv5r.shape,"    Depth5: ",conv5d.shape)'''
         
 
         return conv1r, conv2r, conv3r, conv4r, conv5r, conv1d, conv2d, conv3d, conv4d, conv5d # list of tensor that compress model output
@@ -149,32 +149,32 @@ class levelEnhancedModule(nn.Module):
             
             # Concatenate the original and spatially attended features
             F_rle_cat_sa = torch.cat((F_rle, F_rle_sa), dim=1)
-            print(F_rle_cat_sa.shape, F_dle.shape, F_rle_sa.shape)
+            #print(F_rle_cat_sa.shape, F_dle.shape, F_rle_sa.shape)
             # Element-wise multiplication of concatenated RGB and depth modality enhanced features
             F_rdle = F_rle_cat_sa 
             
             # Apply depthwise separable convolution for the current level
             F_rme = self.dsconv[i](F_rdle)
-            print(F_rme.shape)
+            #print(F_rme.shape)
             # ENHANCEMNET ON D MODALITY Apply spatial attention on F_dle
             F_dle_sa = self.sa[i](F_dle)* F_rle
             
             # Concatenate the original and spatially attended features
             F_dle_cat_sa = torch.cat((F_dle, F_dle_sa), dim=1)
-            print(F_dle_cat_sa.shape, F_rle.shape, F_dle_sa.shape)
+            #print(F_dle_cat_sa.shape, F_rle.shape, F_dle_sa.shape)
             # Element-wise multiplication of concatenated RGB and depth modality enhanced features
             F_drle = F_dle_cat_sa 
             
             # Apply depthwise separable convolution for the current level
             F_dme = self.dsconv[i](F_drle)
-            print(F_dme.shape)
+            #print(F_dme.shape)
             F_f = self.dsconv[i](F_rme+F_dme)
-            print(F_f.shape)
+            #print(F_f.shape)
             F_F.append(F_f)
             # Append results for each level
             F_Rme.append(F_rme)
             F_Dme.append(F_dme)
-            print("F_Fi",i,F_F[i].shape)
+            #print("F_Fi",i,F_F[i].shape)
         for i in range(4,-1,-1):
             # Level i+1 RGB modality enhanced features FiRme
             if i==4:
@@ -185,12 +185,12 @@ class levelEnhancedModule(nn.Module):
                 F_Fi = F_F[i]
                 
                 F_Fe = F_Fi + self.dsconv_n[i](torch.cat((F_Fi,self.upsample(F_Fd[i+1])),dim=1))
-                print("ffe",F_Fe.shape)
+                #print("ffe",F_Fe.shape)
                 VAB = self.LKA[i](F_Fe*F_Fi)
                 F_Fd[i]= VAB
 
             #F_Fd.insert(0,VAB)
-            print("F_Fd",i,"=",F_Fd[i].shape)
+            #print("F_Fd",i,"=",F_Fd[i].shape)
         return F_Fd
 
 class Decoder(nn.Module):
@@ -212,7 +212,7 @@ class Decoder(nn.Module):
             F_dle = F_d[i] + self.conv1x1[i](torch.cat((F_d[i],self.upsample(F_Fd[i+1])),dim=1))
             F_Rle.append(F_rle)
             F_Dle.append(F_dle)
-            print(F_rle.shape)
+            #print(F_rle.shape)
         F_Rle.append(F5r)
         F_Dle.append(F5d)   
         return F_Rle, F_Dle
