@@ -156,8 +156,8 @@ class Solver(object):
                 sal_label_coarse4 = F.interpolate(sal_label, size_coarse4, mode='bilinear', align_corners=True)
                 sal_label_coarse5 = F.interpolate(sal_label, size_coarse5, mode='bilinear', align_corners=True)
                 Fd1,Fd2,Fd3,Fd4,Fd5,Fr,Fd = self.net(sal_image,sal_depth)
-                print("Solver")
-                print(Fd1.shape,Fd2.shape,Fr.shape,Fd.shape)
+                #print("Solver")
+                #print(Fd1.shape,Fd2.shape,Fr.shape,Fd.shape)
                 Fd1_loss = self.iou_loss_saliency(Fd1,sal_label_coarse1,0.5)
                 Fd2_loss = self.iou_loss_saliency(Fd2,sal_label_coarse2,0.5)
                 Fd3_loss = self.iou_loss_saliency(Fd3,sal_label_coarse3,0.5)
@@ -168,7 +168,7 @@ class Solver(object):
                 Dsal_final_loss =  F.binary_cross_entropy_with_logits(Fd, sal_label_coarse2, reduction='sum')
 
                 
-               sal_loss_fuse = Rsal_final_loss + Dsal_final_loss + (1.0*Fd1_loss) + (0.5*Fd2_loss) + (Fd3_loss*0.25) + (0.125*Fd4_loss) + (0.0625*Fd5_loss)
+                sal_loss_fuse = Rsal_final_loss + Dsal_final_loss + (1.0*Fd1_loss) + (0.5*Fd2_loss) + (Fd3_loss*0.25) + (0.125*Fd4_loss) + (0.0625*Fd5_loss)
 
                 sal_loss = sal_loss_fuse
                 r_sal_loss += sal_loss.data
