@@ -168,7 +168,8 @@ class Solver(object):
                 Dsal_final_loss =  F.binary_cross_entropy_with_logits(Fd, sal_label_coarse2, reduction='sum')
 
                 
-                sal_loss_fuse =  Rsal_final_loss + Dsal_final_loss + 1.0*Fd1_loss, 0.5*Fd2_loss, Fd3_loss*0.25, 0.125*Fd4_loss, 0.0625*Fd5_loss
+               sal_loss_fuse = Rsal_final_loss + Dsal_final_loss + (1.0*Fd1_loss) + (0.5*Fd2_loss) + (Fd3_loss*0.25) + (0.125*Fd4_loss) + (0.0625*Fd5_loss)
+
                 sal_loss = sal_loss_fuse
                 r_sal_loss += sal_loss.data
                 r_sal_loss_item+=sal_loss.item() * sal_image.size(0)
