@@ -178,7 +178,7 @@ class Solver(object):
 
                 if (i + 1) % (self.show_every // self.config.batch_size) == 0:
                     print('epoch: [%2d/%2d], iter: [%5d/%5d]  ||  Sal : %0.4f  ||sal_final:%0.4f' % (
-                        epoch, self.config.epoch, i + 1, iter_num, r_sal_loss,sal_final_loss ))
+                        epoch, self.config.epoch, i + 1, iter_num, r_sal_loss,sal_loss ))
                     # print('Learning rate: ' + str(self.lr))
                     writer.add_scalar('training loss', r_sal_loss / (self.show_every / self.iter_size),
                                       epoch * len(self.train_loader.dataset) + i)
