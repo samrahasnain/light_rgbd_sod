@@ -200,13 +200,13 @@ class Solver(object):
                     res = res.sigmoid().data.cpu().numpy().squeeze()
                     res = (res - res.min()) / (res.max() - res.min() + 1e-8)
                     writer.add_image('coarse_sal_rgb', torch.tensor(res), i, dataformats='HW')
-                    grid_image = make_grid(sal_label_coarse[0].clone().cpu().data, 1, normalize=True)'''
+                    grid_image = make_grid(sal_label_coarse[0].clone().cpu().data, 1, normalize=True)
                     
                     fsal = sal_final[0].clone()
                     fsal = fsal.sigmoid().data.cpu().numpy().squeeze()
                     fsal = (fsal - fsal.min()) / (fsal.max() - fsal.min() + 1e-8)
                     writer.add_image('sal_final', torch.tensor(fsal), i, dataformats='HW')
-                    grid_image = make_grid(sal_label[0].clone().cpu().data, 1, normalize=True)
+                    grid_image = make_grid(sal_label[0].clone().cpu().data, 1, normalize=True)'''
 
   
 
