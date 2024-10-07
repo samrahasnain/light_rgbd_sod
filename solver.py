@@ -118,27 +118,14 @@ class Solver(object):
     
     
 
-    def iou_loss_saliency(self,pred_map, target_map, threshold=0.5):
+    def iou_loss_saliency(self,pred, target, threshold=0.5):
 
-        # Binarize the saliency maps using the given threshold
-        pred_mask = (pred_map > threshold).float()
-        target_mask = (target_map > threshold).float()
+        pred = torch.sigmoid(pred)
+        inter = (pred * target).sum(dim=(2, 3))
+        union = (pred + target).sum(dim=(2, 3)) - inter
+        iou = 1 - (inter / union)
 
-        # Flatten the masks
-        pred_mask = pred_mask.view(-1)
-        target_mask = target_mask.view(-1)
-
-        # Calculate intersection and union
-        intersection = (pred_mask * target_mask).sum()
-        union = pred_mask.sum() + target_mask.sum() - intersection
-
-        # Compute IoU
-        iou = intersection / torch.clamp(union, min=1e-6)
-
-        # Compute IoU loss (1 - IoU)
-        iou_loss = 1 - iou
-
-        return iou_loss
+        return iou.mean()
 
 
 
