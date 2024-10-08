@@ -94,12 +94,12 @@ class Solver(object):
             images, name, im_size, depth = data_batch['image'], data_batch['name'][0], np.asarray(data_batch['size']), \
                                            data_batch['depth']
             with torch.no_grad():
-                '''if self.config.cuda:
+                if self.config.cuda:
                     device = torch.device(self.config.device_id)
                     images = images.to(device)
-                    depth = depth.to(device)'''
+                    depth = depth.to(device)
                 #input = torch.cat((images, depth), dim=0)
-                #torch.cuda.synchronize()
+                torch.cuda.synchronize()
                 tsince = int(round(time.time()*1000)) 
                 preds,Fd2,Fd3,Fd4,Fd5,Fr,Fd = self.net(images,depth)
                 #torch.cuda.synchronize()
