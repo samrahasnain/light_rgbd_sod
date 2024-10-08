@@ -101,7 +101,7 @@ class Solver(object):
                 #input = torch.cat((images, depth), dim=0)
                 #torch.cuda.synchronize()
                 tsince = int(round(time.time()*1000)) 
-                preds,_ = self.net(images,depth)
+                preds,Fd2,Fd3,Fd4,Fd5,Fr,Fd = self.net(images,depth)
                 #torch.cuda.synchronize()
                 ttime_elapsed = int(round(time.time()*1000)) - tsince
                 print ('test time elapsed {}ms'.format(ttime_elapsed))
